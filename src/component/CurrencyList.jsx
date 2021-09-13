@@ -1,11 +1,13 @@
 import React from 'react';
 
-const Select = ({...props}) => {
+const CurrencyList = ({state, arr,...props}) => {
     return (
-        <select>
-            
+        <select {...props}>
+            {arr.map( value =>
+                <option  onChange={e => setState(e.target.value)} >{value.a}</option>
+            )}
         </select>
     );
 };
 
-export default Select;
+export default CurrencyList;
