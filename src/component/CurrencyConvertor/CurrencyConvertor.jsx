@@ -1,95 +1,46 @@
 import React, { useState, useEffect } from "react";
 import {
-  DEFAULT_CURRENCY_VALUE,
+  DEFAULT_CURRENCY_VALUES,
   DEFAULT_INPUT_VALUE,
-  DEFAULT_SELECTED_VALUE,
+  DEFAULT_SELECTED_VALUES,
 } from "../../defaultValue/defaultValue";
 import getCurrencyRates from "../../API/getCurrencyRates";
 import CurrencyInput from "./component/CurrencyInput";
 import CurrencySelect from "./component/CurrencySelect";
 
 export default function CurrencyConvertor() {
-  const [currencyValue, setCurrencyValue] = useState(DEFAULT_CURRENCY_VALUE);
+  const [currencyValues, setCurrencyValues] = useState(DEFAULT_CURRENCY_VALUES);
   const [inputValue, setInputValue] = useState(DEFAULT_INPUT_VALUE);
-  const [selectedValue, setSelectedValue] = useState(DEFAULT_SELECTED_VALUE);
+  const [selectedValues, setSelectedValues] = useState(DEFAULT_SELECTED_VALUES);
 
   useEffect(() => {
-    (async function fetchCurrency() {
-      const result = await getCurrencyRates();
-      setCurrencyValue(result);
-      setInputValue({
-        ...inputValue,
-        fromInput: inputValue.fromInput,
-        toInput: getThroughFormula(
-          result[selectedValue.toSelect],
-          result[selectedValue.fromSelect],
-          inputValue.fromInput
-        ),
-      });
-    })();
+    getCurrencyRates().then((result) => {
+      setCurrencyValues(result);
+    });
   }, []);
 
-  useEffect(() => {
-    setInputValue({
-      ...inputValue,
-      fromInput: inputValue.fromInput,
-      toInput: getThroughFormula(
-        currencyValue[selectedValue.toSelect],
-        currencyValue[selectedValue.fromSelect],
-        inputValue.fromInput
-      ),
-    });
-  }, [selectedValue]);
-
-  const getThroughFormula = (selectValue, anotherSelectValue, input) => {
-    return (selectValue / anotherSelectValue) * input;
+  const getThroughFormula = () => {
+    return (
+      (currencyValues[selectedValues.fromSelect] /
+        currencyValues[selectedValues.toSelect]) *
+      inputValue
+    );
   };
 
-  const handleChangeSelect = (fromSelect, toSelect, select) => {
-    if (select === "from") {
-      setSelectedValue({ ...selectedValue, fromSelect: fromSelect });
-    } else if (select === "to") {
-      setSelectedValue({ ...selectedValue, toSelect: toSelect });
-    }
+  const handleChangeSelect = (fromSelect, toSelect, isToSelect) => {
+    isToSelect
+      ? setSelectedValues({ ...selectedValues, fromSelect: fromSelect })
+      : setSelectedValues({ ...selectedValues, toSelect: toSelect });
   };
 
-  const handleChangeInput = (fromInput, toInput, input) => {
-    if (input === "from") {
-      setInputValue({
-        ...inputValue,
-        fromInput: fromInput,
-        toInput: getThroughFormula(
-          currencyValue[selectedValue.toSelect],
-          currencyValue[selectedValue.fromSelect],
-          fromInput
-        ),
-      });
-      console.log(input);
-    } else {
-      setInputValue({
-        ...inputValue,
-        fromInput: getThroughFormula(
-          currencyValue[selectedValue.fromSelect],
-          currencyValue[selectedValue.toSelect],
-          toInput
-        ),
-        toInput: toInput,
-      });
-      console.log(input);
-    }
+  const handleChangeInput = (e) => {
+    setInputValue(e);
   };
 
-  const swap = (event) => {
-    event.preventDefault();
-    setSelectedValue({
-      ...selectedValue,
-      fromSelect: selectedValue.toSelect,
-      toSelect: selectedValue.fromSelect,
-    });
-    setInputValue({
-      ...inputValue,
-      fromInput: inputValue.toInput,
-      toInput: inputValue.fromInput,
+  const swap = () => {
+    setSelectedValues({
+      fromSelect: selectedValues.toSelect,
+      toSelect: selectedValues.fromSelect,
     });
   };
 
@@ -100,26 +51,26 @@ export default function CurrencyConvertor() {
         <div className={"App__items-wrapper App__select-wrapper"}>
           <CurrencySelect
             className={"App__item"}
-            value={selectedValue.fromSelect}
-            option={currencyValue}
+            value={selectedValues.fromSelect}
+            option={currencyValues}
             onChange={(event) =>
               handleChangeSelect(
                 event.target.value,
-                selectedValue.toSelect,
-                "from"
+                selectedValues.toSelect,
+                true
               )
             }
           />
           <span>в</span>
           <CurrencySelect
             className={"App__item"}
-            value={selectedValue.toSelect}
-            option={currencyValue}
+            value={selectedValues.toSelect}
+            option={currencyValues}
             onChange={(event) =>
               handleChangeSelect(
-                selectedValue.fromSelect,
+                selectedValues.fromSelect,
                 event.target.value,
-                "to"
+                false
               )
             }
           />
@@ -127,18 +78,14 @@ export default function CurrencyConvertor() {
         <div className={"App__items-wrapper App__input-wrapper"}>
           <CurrencyInput
             className={"App__item"}
-            value={inputValue.fromInput}
-            onChange={(event) =>
-              handleChangeInput(event.target.value, inputValue.toInput, "from")
-            }
+            value={inputValue}
+            onChange={(event) => handleChangeInput(event.target.value)}
           />
           <span>=</span>
           <CurrencyInput
             className={"App__item"}
-            value={inputValue.toInput}
-            onChange={(event) =>
-              handleChangeInput(inputValue.fromInput, event.target.value, "to")
-            }
+            readOnly={true}
+            value={getThroughFormula()}
           />
         </div>
       </div>
