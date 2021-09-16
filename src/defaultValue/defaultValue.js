@@ -3,4 +3,4 @@ export const DEFAULT_SELECTED_VALUES = {
   fromSelect: "EUR",
   toSelect: "RUB",
 };
-export const DEFAULT_INPUT_VALUE = 1
+export const DEFAULT_INPUT_VALUE = 1;
